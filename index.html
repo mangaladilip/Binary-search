@@ -22,25 +22,34 @@
             background-color: var(--white);
             color: var(--dark);
             margin: 0;
-            padding: 10px;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
+        }
+
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 95%;
+            max-width: 1350px;
+            height: 95vh;
+            gap: 10px;
         }
 
         .container {
             display: grid;
             grid-template-columns: 260px 1fr 300px;
             gap: 15px;
-            width: 100%;
-            max-width: 1350px;
-            height: 90vh;
+            flex-grow: 1;
             background: var(--bg-off-white);
             padding: 15px;
             border: 2px solid var(--dark);
             border-radius: 12px;
+            overflow: hidden;
         }
 
         .panel {
@@ -90,11 +99,14 @@
             top: 0;
         }
 
-        .display-area { overflow-y: auto; }
+        .display-area { 
+            overflow-y: auto; 
+            max-height: 100%;
+        }
 
         .search-line {
             position: relative;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             padding-top: 45px;
             padding-bottom: 20px;
             border-bottom: 1px solid #eee;
@@ -129,58 +141,66 @@
         #btnReset { background: var(--dark); color: white; }
         button:disabled { background: #ccc !important; }
 
-        footer { text-align: center; font-size: 11px; margin-top: 8px; width: 100%; position: absolute; bottom: 6px; }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--dark);
+            padding: 5px 0;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="panel">
-        <h3 style="color: var(--primary-green); margin: 0 0 8px 0;">Steps</h3>
-        <div id="step1" class="step-box">Find the middle element.</div>
-        <div id="step2" class="step-box">Compare middle value with target.</div>
-        <div id="step3" class="step-box">If target == middle, value is found!</div>
-        <div id="step4" class="step-box">If target < middle, search left half.</div>
-        <div id="step5" class="step-box">If target > middle, search right half.</div>
-        <div id="step6" class="step-box">Repeat until found or list ends.</div>
-        <div id="step7" class="step-box">Display output.</div>
+<div class="main-wrapper">
+    <div class="container">
+        <div class="panel">
+            <h3 style="color: var(--primary-green); margin: 0 0 8px 0;">Steps</h3>
+            <div id="step1" class="step-box">Find the middle element.</div>
+            <div id="step2" class="step-box">Compare middle value with target.</div>
+            <div id="step3" class="step-box">If target == middle, value is found!</div>
+            <div id="step4" class="step-box">If target < middle, search left half.</div>
+            <div id="step5" class="step-box">If target > middle, search right half.</div>
+            <div id="step6" class="step-box">Repeat until found or list ends.</div>
+            <div id="step7" class="step-box">Display output.</div>
 
-        <div class="controls">
-            <label style="font-size: 12px; font-weight: 600;">Target (12-92):</label><br>
-            <input type="number" id="targetInput" value="33">
-            <div class="btn-group">
-                <button id="btnAction" onclick="nextAction()">Next Step</button>
-                <button id="btnReset" onclick="resetSim()">Reset</button>
+            <div class="controls">
+                <label style="font-size: 12px; font-weight: 600;">Target (12-92):</label><br>
+                <input type="number" id="targetInput" value="33">
+                <div class="btn-group">
+                    <button id="btnAction" onclick="nextAction()">Next Step</button>
+                    <button id="btnReset" onclick="resetSim()">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel display-area">
+            <h3 id="status" style="margin: 0 0 5px 0; font-size: 16px;">Visualizer</h3>
+            <div id="visualRoot"></div>
+            <div id="finalResult" style="text-align:center; font-weight:700; margin-top:10px; color: var(--secondary-blue); font-size: 16px;"></div>
+        </div>
+
+        <div class="panel">
+            <h3 style="color: var(--purple); margin: 0 0 8px 0;">Trace Table</h3>
+            <div style="overflow-y: auto;">
+                <table class="trace-table">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Mid</th>
+                            <th>Condition</th>
+                        </tr>
+                    </thead>
+                    <tbody id="traceBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <div class="panel display-area">
-        <h3 id="status" style="margin: 0 0 5px 0; font-size: 16px;">Visualizer</h3>
-        <div id="visualRoot"></div>
-        <div id="finalResult" style="text-align:center; font-weight:700; margin-top:10px; color: var(--secondary-blue); font-size: 16px;"></div>
-    </div>
-
-    <div class="panel">
-        <h3 style="color: var(--purple); margin: 0 0 8px 0;">Trace Table</h3>
-        <div style="overflow-y: auto;">
-            <table class="trace-table">
-                <thead>
-                    <tr>
-                        <th>Step</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Mid</th>
-                        <th>Condition</th>
-                    </tr>
-                </thead>
-                <tbody id="traceBody"></tbody>
-            </table>
-        </div>
-    </div>
+    <div class="footer">© CuriousEd.ai.</div>
 </div>
-
-<footer>© CuriousEd.ai.</footer>
 
 <script>
     const data = [12, 18, 25, 33, 42, 55, 61, 70, 84, 92];
@@ -261,7 +281,7 @@
         if (subStep === 0) {
             mid = Math.floor((low + high) / 2);
             drawRow(mid, low, high, false);
-            addEmptyTraceRow(); // Instant Tracing
+            addEmptyTraceRow();
             highlightStep(1);
             subStep = 1;
         } else if (subStep === 1) {
