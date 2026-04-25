@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #77a766;
+            --accent-yellow: #e8d227;
+            --secondary-blue: #318ec3;
+            --bg-off-white: #f2f1e8;
+            --white: #f9f9fa;
+            --dark: #232323;
+            --purple: #724b9e;
+            --font-main: 'Outfit', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--white);
+            color: var(--dark);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr 300px;
+            gap: 15px;
+            width: 100%;
+            max-width: 1350px;
+            height: 90vh;
+            background: var(--bg-off-white);
+            padding: 15px;
+            border: 2px solid var(--dark);
+            border-radius: 12px;
+        }
+
+        .panel {
+            background: white;
+            padding: 12px;
+            border: 2px solid var(--dark);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .step-box {
+            padding: 6px 10px;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            font-size: 13px;
+            line-height: 1.2;
+            color: #666;
+        }
+
+        .step-box.active {
+            background-color: var(--accent-yellow);
+            border-color: var(--dark);
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .trace-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .trace-table th, .trace-table td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: center;
+        }
+
+        .trace-table th {
+            background-color: var(--purple);
+            color: white;
+            font-size: 10px;
+            position: sticky;
+            top: 0;
+        }
+
+        .display-area { overflow-y: auto; }
+
+        .search-line {
+            position: relative;
+            margin-bottom: 12px;
+            padding-top: 45px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .row-title { position: absolute; top: 2px; left: 0; font-weight: 700; font-size: 11px; color: #bbb; }
+        .boxes-wrapper { display: flex; gap: 4px; margin-top: 2px; }
+        .box-container { display: flex; flex-direction: column; align-items: center; width: 36px; position: relative; }
+        .pos-label { font-size: 9px; color: #aaa; margin-bottom: 4px; font-weight: 600; }
+
+        .num-box {
+            width: 34px; height: 34px; border: 1px solid var(--dark);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; position: relative; background: white; z-index: 1;
+        }
+
+        .label { position: absolute; font-size: 8px; font-weight: 800; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+        .label-start { top: -42px; color: var(--purple); }
+        .label-end { top: -32px; color: var(--purple); }
+        .label-mid { bottom: -18px; color: var(--primary-green); }
+
+        .ignored { background: #f8f8f8; color: #ccc; border-color: #eee; }
+        .is-mid { background: var(--accent-yellow); border-width: 2px; }
+        .is-found { background: var(--secondary-blue); color: white; border-width: 2px; }
+
+        .controls { margin-top: auto; padding-top: 10px; border-top: 1px solid #eee; }
+        input { padding: 6px; width: 60px; border: 2px solid var(--dark); border-radius: 4px; font-family: var(--font-main); font-weight: 700; }
+        
+        .btn-group { display: flex; gap: 5px; margin-top: 8px; }
+        button { flex: 1; padding: 10px; border-radius: 4px; font-weight: 700; cursor: pointer; font-family: var(--font-main); border: none; }
+        #btnAction { background: var(--primary-green); color: white; }
+        #btnReset { background: var(--dark); color: white; }
+        button:disabled { background: #ccc !important; }
+
+        footer { text-align: center; font-size: 11px; margin-top: 8px; width: 100%; position: absolute; bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="panel">
+        <h3 style="color: var(--primary-green); margin: 0 0 8px 0;">Steps</h3>
+        <div id="step1" class="step-box">Find the middle element.</div>
+        <div id="step2" class="step-box">Compare middle value with target.</div>
+        <div id="step3" class="step-box">If target == middle, value is found!</div>
+        <div id="step4" class="step-box">If target < middle, search left half.</div>
+        <div id="step5" class="step-box">If target > middle, search right half.</div>
+        <div id="step6" class="step-box">Repeat until found or list ends.</div>
+        <div id="step7" class="step-box">Display output.</div>
+
+        <div class="controls">
+            <label style="font-size: 12px; font-weight: 600;">Target (12-92):</label><br>
+            <input type="number" id="targetInput" value="33">
+            <div class="btn-group">
+                <button id="btnAction" onclick="nextAction()">Next Step</button>
+                <button id="btnReset" onclick="resetSim()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel display-area">
+        <h3 id="status" style="margin: 0 0 5px 0; font-size: 16px;">Visualizer</h3>
+        <div id="visualRoot"></div>
+        <div id="finalResult" style="text-align:center; font-weight:700; margin-top:10px; color: var(--secondary-blue); font-size: 16px;"></div>
+    </div>
+
+    <div class="panel">
+        <h3 style="color: var(--purple); margin: 0 0 8px 0;">Trace Table</h3>
+        <div style="overflow-y: auto;">
+            <table class="trace-table">
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Mid</th>
+                        <th>Condition</th>
+                    </tr>
+                </thead>
+                <tbody id="traceBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<footer>© CuriousEd.ai.</footer>
+
+<script>
+    const data = [12, 18, 25, 33, 42, 55, 61, 70, 84, 92];
+    let low, high, mid, target, searchStep, subStep, isFinished;
+
+    function init() {
+        low = 0; high = data.length - 1; mid = -1; target = null; searchStep = 0; subStep = 0; isFinished = false;
+        document.getElementById('targetInput').disabled = false;
+        document.getElementById('btnAction').disabled = false;
+        document.getElementById('visualRoot').innerHTML = '';
+        document.getElementById('traceBody').innerHTML = '';
+        document.getElementById('finalResult').innerText = '';
+        document.getElementById('status').innerText = "Visualizer";
+        highlightStep(null);
+        drawRow(-1, 0, 9, false, "Initial List");
+    }
+
+    window.onload = init;
+
+    function highlightStep(id) {
+        document.querySelectorAll('.step-box').forEach(b => b.classList.remove('active'));
+        if(id) document.getElementById('step' + id).classList.add('active');
+    }
+
+    function drawRow(currentMid, currentLow, currentHigh, showFound, customTitle) {
+        const root = document.getElementById('visualRoot');
+        const line = document.createElement('div');
+        line.className = 'search-line';
+        line.innerHTML = `<div class="row-title">${customTitle || "Step " + searchStep}</div>`;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'boxes-wrapper';
+
+        data.forEach((val, i) => {
+            const container = document.createElement('div');
+            container.className = 'box-container';
+            container.innerHTML = `<div class="pos-label">${i+1}</div>`;
+            const box = document.createElement('div');
+            box.className = 'num-box' + (i < currentLow || i > currentHigh ? ' ignored' : '');
+            if (i === currentMid) box.className += showFound ? ' is-found' : ' is-mid';
+            box.innerText = val;
+            if (i === currentMid) box.innerHTML += `<div class="label label-mid">MID</div>`;
+            if (!showFound && i >= currentLow && i <= currentHigh) {
+                if (i === currentLow) box.innerHTML += `<div class="label label-start">START</div>`;
+                if (i === currentHigh) box.innerHTML += `<div class="label label-end">END</div>`;
+            }
+            container.appendChild(box);
+            wrapper.appendChild(container);
+        });
+        line.appendChild(wrapper);
+        root.appendChild(line);
+        root.scrollTop = root.scrollHeight;
+    }
+
+    function addEmptyTraceRow() {
+        const tbody = document.getElementById('traceBody');
+        const row = document.createElement('tr');
+        row.id = `trace-step-${searchStep}`;
+        row.innerHTML = `<td>${searchStep}</td><td>${low+1}</td><td>${high+1}</td><td>${mid+1}</td><td id="cond-${searchStep}">-</td>`;
+        tbody.appendChild(row);
+    }
+
+    function updateTraceCond(cond) {
+        const cell = document.getElementById(`cond-${searchStep}`);
+        if(cell) cell.innerText = cond;
+    }
+
+    function nextAction() {
+        if (searchStep === 0) {
+            target = parseInt(document.getElementById('targetInput').value);
+            document.getElementById('targetInput').disabled = true;
+            document.getElementById('status').innerText = "Searching for: " + target;
+            document.getElementById('visualRoot').innerHTML = '';
+            searchStep = 1;
+        }
+
+        if (isFinished) return;
+
+        if (subStep === 0) {
+            mid = Math.floor((low + high) / 2);
+            drawRow(mid, low, high, false);
+            addEmptyTraceRow(); // Instant Tracing
+            highlightStep(1);
+            subStep = 1;
+        } else if (subStep === 1) {
+            highlightStep(2);
+            if (data[mid] === target) {
+                updateTraceCond(`${target}==${data[mid]}`);
+                highlightStep(3);
+                finishSearch(true);
+            } else {
+                subStep = 2;
+                nextAction(); 
+            }
+        } else if (subStep === 2) {
+            if (target < data[mid]) {
+                updateTraceCond(`${target}<${data[mid]}`);
+                highlightStep(4);
+                high = mid - 1;
+            } else {
+                updateTraceCond(`${target}>${data[mid]}`);
+                highlightStep(5);
+                low = mid + 1;
+            }
+            if (low > high) finishSearch(false);
+            else subStep = 3;
+        } else if (subStep === 3) {
+            highlightStep(6);
+            searchStep++;
+            subStep = 0;
+        }
+    }
+
+    function finishSearch(found) {
+        isFinished = true;
+        document.getElementById('btnAction').disabled = true;
+        highlightStep(7);
+        if(found) {
+            const last = document.getElementById('visualRoot').lastChild.querySelectorAll('.num-box');
+            last[mid].classList.remove('is-mid');
+            last[mid].classList.add('is-found');
+            document.getElementById('finalResult').innerText = "Output: Found at Pos " + (mid + 1);
+        } else {
+            document.getElementById('finalResult').innerText = "Output: Not found";
+            document.getElementById('finalResult').style.color = "red";
+        }
+    }
+
+    function resetSim() { init(); }
+</script>
+</body>
+</html>
